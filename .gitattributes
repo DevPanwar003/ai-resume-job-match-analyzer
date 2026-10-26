@@ -1,0 +1,4 @@
+# Preserve document and image bytes across Windows and other checkouts.
+*.pdf binary
+*.docx binary
+*.png binary

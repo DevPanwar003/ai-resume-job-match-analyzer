@@ -1,0 +1,34 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+data/
+*.sqlite*
+*.db
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.log
+
+# Local credentials, temporary artifacts, and generated reports
+*.pem
+*.key
+credentials*.json
+secrets*.json
+tmp/
+temp/
+reports/
+exports/
+uploads/
+private/
+*.tmp
+*.temp
+*.bak
+~$*
+
+# Resume documents are private unless explicitly approved fictional samples.
+*.pdf
+*.docx
+!samples/fictional_resume.pdf
+!samples/fictional_resume.docx

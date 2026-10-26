@@ -1,0 +1,91 @@
+%PDF-1.3
+%‚„œ”
+1 0 obj
+<<
+/Producer (pypdf)
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Count 1
+/Kids [ 4 0 R ]
+>>
+endobj
+3 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+4 0 obj
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+/MediaBox [ 0.0 0.0 612 792 ]
+/Parent 2 0 R
+/Contents 6 0 R
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+6 0 obj
+<<
+/Length 974
+>>
+stream
+BT /F1 10 Tf 40 750 Td 15 TL
+(FICTIONAL SAMPLE RESUME - FOR TESTING ONLY) Tj T*
+(Alex Example) Tj T*
+(Junior Data Analyst) Tj T*
+() Tj T*
+(SUMMARY) Tj T*
+(Fictional analyst with experience building Python reports and SQL dashboards.) Tj T*
+() Tj T*
+(SKILLS) Tj T*
+(Python, SQL, SQLite, pandas, data validation, visualization, Git) Tj T*
+() Tj T*
+(EXPERIENCE) Tj T*
+(Sample Harbor Labs \(fictional organization\)) Tj T*
+(Data Analyst Intern | 2025 - 2026) Tj T*
+(Built a fictional sales dashboard and documented data quality checks.) Tj T*
+(Wrote SQL queries and Python scripts for synthetic datasets.) Tj T*
+(Collaborated with a sample team to explain reporting results.) Tj T*
+() Tj T*
+(EDUCATION) Tj T*
+(Example Institute \(fictional institution\)) Tj T*
+(BSc Computer Science | 2025) Tj T*
+() Tj T*
+(PROJECT) Tj T*
+(Local reporting dashboard using Streamlit and SQLite.) Tj T*
+(All information in this document is invented. No real contact details are included.) Tj T*
+ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000054 00000 n 
+0000000113 00000 n 
+0000000162 00000 n 
+0000000294 00000 n 
+0000000364 00000 n 
+trailer
+<<
+/Size 7
+/Root 3 0 R
+/Info 1 0 R
+>>
+startxref
+1389
+%%EOF

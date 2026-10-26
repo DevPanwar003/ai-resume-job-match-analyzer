@@ -1,0 +1,24 @@
+FICTIONAL SAMPLE RESUME - FOR TESTING ONLY
+Alex Example
+Junior Data Analyst
+
+SUMMARY
+Fictional analyst with experience building Python reports and SQL dashboards.
+
+SKILLS
+Python, SQL, SQLite, pandas, data validation, visualization, Git
+
+EXPERIENCE
+Sample Harbor Labs (fictional organization)
+Data Analyst Intern | 2025 - 2026
+Built a fictional sales dashboard and documented data quality checks.
+Wrote SQL queries and Python scripts for synthetic datasets.
+Collaborated with a sample team to explain reporting results.
+
+EDUCATION
+Example Institute (fictional institution)
+BSc Computer Science | 2025
+
+PROJECT
+Local reporting dashboard using Streamlit and SQLite.
+All information in this document is invented. No real contact details are included.

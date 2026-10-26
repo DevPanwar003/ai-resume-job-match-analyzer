@@ -1,0 +1,24 @@
+FICTIONAL JOB DESCRIPTION - FOR TESTING ONLY
+Junior Data Analyst | Example Meadow Analytics (fictional organization)
+
+We are seeking a junior analyst to support a fictional operations reporting team.
+You will turn raw sales and service datasets into reliable weekly reports and
+explain trends to colleagues. This role emphasizes careful analysis and clear documentation.
+
+Responsibilities:
+- Write SQL queries to join tables, aggregate metrics and investigate discrepancies.
+- Use Python for data cleaning, repeatable transformations and data quality checks.
+- Maintain Excel workbooks with formulas and pivot tables for ad hoc analysis.
+- Build Power BI dashboards with clear data visualization and documented metrics.
+- Apply descriptive statistics to summarize distributions and compare trends.
+- Document assumptions, validate results and communicate findings to stakeholders.
+
+Requirements:
+- Working knowledge of SQL, Python and Excel through coursework or actual projects.
+- Familiarity with Power BI, statistics, data cleaning and visualization.
+- Ability to explain missing-value handling and validate a reporting dataset.
+- Clear written communication and attention to detail.
+- Experience documenting a small analytics project with Git.
+
+Nice to have: Streamlit dashboards and basic automated testing.
+This is an invented role for software testing, not an actual job advertisement.
