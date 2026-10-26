@@ -1,367 +1,247 @@
-# AI Resume & Job Match Analyzer — Version 3
+# AI Resume & Job Match Analyzer
 
-A local Streamlit portfolio project for PDF/DOCX extraction, document statistics,
-skill mention matching, TF-IDF similarity and evidence-based résumé editing prompts.
-**Scores describe text alignment, not hiring success, proficiency or candidate quality.**
-No API keys, paid services, LLMs or external résumé uploads are used.
+**A local Python application for exploring resume-to-role alignment with transparent scoring.**
 
-## V3 features and realistic comparison demo
+This portfolio project combines document processing, text analytics, interactive dashboards,
+and SQLite persistence in a modular Streamlit application. It extracts resume content,
+compares recognized skills with job requirements, and helps users inspect the evidence behind
+skill gaps and suggested learning priorities.
 
-- Compare one PDF/DOCX resume against one to five job descriptions using the unchanged V2 engine.
-- Ranked table with score, coverage, similarity, matched skills and missing skills.
-- Interactive grouped and stacked Plotly charts plus the existing detailed job analysis.
-- Local PDF and standalone HTML downloads with methodology, limitations, related skills and recommendations.
-- Existing single-job workflow, fictional samples and opt-in SQLite history remain available.
+Despite the project name, the current implementation uses deterministic rules and local
+TF-IDF calculations, not a generative AI service or trained semantic model. No API key is needed.
+**Scores are analytical aids, not predictions of hiring success, ATS outcomes, or proficiency.**
 
-Choose **Compare jobs** in the sidebar, then **Run three-job fictional demo**.
-The real sample PDF is compared with reporting analyst, business intelligence and
-machine learning roles from `samples/fictional_jobs.json`. Every role and identity
-is fictional. Inspect the ranked table, choose a job for detailed feedback, and
-click **Generate local reports** to enable both downloads.
+## Features
 
-For your own comparison, select one to five jobs, upload one resume, fill every
-visible title and description, and click **Compare jobs**. Empty descriptions are
-errors, not silently skipped. Results and reports reflect the last submitted
-snapshot; submit again after editing. Exact score ties retain input order, even
-if displayed rounding makes different scores look equal. N/A jobs appear last
-without ranks. Adding another job never changes an existing pair's score.
+| Capability | Current implementation |
+| --- | --- |
+| Resume extraction | PDF and DOCX uploads; extracted text, document statistics, and actionable validation errors |
+| Skill matching | Case-insensitive taxonomy aliases, whole-token boundaries, matched skills, not-detected skills, and explicitly related skills |
+| Transparent scoring | Unique-skill coverage and two-document TF-IDF cosine similarity, with separate contributions and Plotly charts |
+| Job Title Intelligence | Built-in role profiles, title aliases, automatic detection, and manual role selection |
+| Custom role profiles | Preview skills extracted from a detailed description; explicitly save, edit, reuse, or delete a local profile |
+| Optional learning advice | Prioritized gaps, prerequisites, practice tasks, approximate learning times, completion goals, and a suggested four-week plan |
+| Evidence-based editing | Optional bullet-editing prompts grounded in existing resume lines; no invented achievements |
+| Multi-job comparison | Compare one resume with up to five jobs, inspect ranked results, and explore interactive comparison charts |
+| Reports | Generate local PDF and HTML comparison reports with methodology, skills, and recommendations |
+| Local history | Opt-in numeric document summaries in SQLite; comparison results remain in session memory |
 
-![V3 comparison dashboard](docs/screenshots/v3-comparison.png)
+### Supported roles and custom profiles
 
-![V3 local report downloads](docs/screenshots/v3-reports.png)
+The built-in catalog includes Data Analyst, Business Analyst, Data Scientist, Software Engineer,
+Python Developer, Java Developer, Web Developer, Frontend Developer, Backend Developer,
+Full Stack Developer, Machine Learning Engineer, and Database Administrator.
 
-Reports omit full source documents and resume quotations by default. An explicit
-checkbox includes the original bullet evidence. Job titles and skill summaries
-can still be sensitive: review before sharing. Reports are generated in memory,
-not written into the database or automatically saved by the application. HTML
-contains no scripts or remote assets; all dynamic text is escaped. PDF uses
-built-in Western fonts and replaces unsupported glyphs with `?`; use HTML for
-full Unicode. Reports contain text summaries, not interactive charts.
+- A recognized title such as `Data Analyst job` can use its predefined profile without a full description.
+- A sufficiently detailed description replaces generic built-in or saved requirements with its recognized skills.
+- An unknown title with a valid description produces a temporary profile using the same taxonomy.
+- **Preview role skills** shows essential, preferred, and unspecified mentions before analysis or saving.
+- **Save this role locally** persists only the reviewed title and skill metadata. **Edit saved roles** updates skills and importance or deletes the profile after confirmation. Duplicate titles are rejected without overwriting existing profiles.
 
-Comparison is session-only and does not create history rows. Single-job numeric
-history is unchanged, with no schema migration. Clear comparison inputs/reports
-or stop the server to discard its session state. Downloads you save are outside
-the app's control and remain until you delete them.
+Profile extraction is a deterministic summary of skill mentions, not a model that learns new
+skills. Unknown titles without sufficient description evidence remain unscored.
 
-## Windows setup (PowerShell / VS Code)
+## Technology stack
 
-Install Python 3.11 or 3.12 with the Windows Python launcher. Open this project
-folder in VS Code, then run:
+| Layer | Technology |
+| --- | --- |
+| Application and UI | Python, Streamlit |
+| Document parsing | pypdf, python-docx |
+| Text analytics | Python standard library: regular expressions, counters, and math |
+| Visualization | Plotly |
+| Persistence | SQLite through Python's `sqlite3` module |
+| Export | ReportLab for PDF; escaped HTML generated locally |
+| Verification | pytest and Streamlit AppTest |
+
+Dependency ranges are maintained in [requirements.txt](requirements.txt). There are no external
+AI APIs, model downloads, or additional data-service dependencies.
+
+## Architecture and project structure
+
+The UI validates inputs and extracts document text in memory. Role resolution supplies either
+a catalog profile or the recognized requirements from a description. Single-job and comparison
+workflows call the same matching engine. Optional advice uses those gaps and predefined learning
+guidance. Persistence is separate from scoring; reports are generated in memory.
+
+```text
+ai-resume-job-match-analyzer/
+|-- app.py                       Streamlit entry point
+|-- run.ps1                      Project-aware Windows launcher with port check
+|-- requirements.txt             Runtime and test dependencies
+|-- .streamlit/config.toml       Navy/teal theme, loopback binding, telemetry disabled
+|-- .gitignore                   Local data, credentials, caches and report exclusions
+|-- .gitattributes               Preserve PDF, DOCX and PNG bytes in Git
+|-- resume_analyzer/
+|   |-- ui.py                    Single-job input, analysis tabs and history view
+|   |-- parsing.py               PDF/DOCX extraction and file validation
+|   |-- analysis.py              Text validation and descriptive statistics
+|   |-- taxonomy.py              Canonical skills, aliases and related pairs
+|   |-- matching.py              Shared coverage, TF-IDF and validation logic
+|   |-- role_skills.py           Built-in profiles and description-based resolution
+|   |-- custom_roles.py          Separate SQLite store for approved custom roles
+|   |-- role_ui.py               Profile preview/edit controls and advice preference
+|   |-- roadmap.py               Deterministic priorities, exercises and learning plan
+|   |-- roadmap_ui.py            Roadmap presentation
+|   |-- suggestions.py           Source-grounded bullet-editing prompts
+|   |-- match_ui.py              Detailed scores, skill lists and charts
+|   |-- comparison.py            Batch validation and ranking using the shared engine
+|   |-- comparison_ui.py         Comparison forms, charts and report downloads
+|   |-- reports.py               In-memory HTML and PDF exports
+|   `-- persistence.py           Parameterized SQL for numeric history
+|-- tests/                       Parsing, scoring, role, roadmap, report and UI tests
+|-- samples/                     Clearly labeled fictional resumes and job descriptions
+|-- scripts/generate_samples.py  Rebuild fictional PDF/DOCX fixtures
+|-- docs/screenshots/            Existing fictional-demo screenshots
+`-- data/                       Local SQLite files; ignored by Git
+```
+
+## Installation on Windows
+
+The project is verified with Python 3.12. Install Python 3.12 with the Windows `py` launcher,
+Git, and optionally VS Code. In PowerShell:
 
 ```powershell
+git clone https://github.com/DevPanwar003/ai-resume-job-match-analyzer.git
+cd ai-resume-job-match-analyzer
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+If the project is already cloned, open its existing folder and reuse `.venv`.
+In VS Code, select `.venv\Scripts\python.exe` as the Python interpreter.
+These commands do not require virtual-environment activation or an execution-policy change.
+Dependency installation needs internet access; normal analysis runs locally afterward.
+
+### Run the application
+
+Run from the project root so Streamlit loads `.streamlit/config.toml`:
+
+```powershell
+.\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --server.port 8502
+```
+
+Open [http://127.0.0.1:8502](http://127.0.0.1:8502). Stop with **Ctrl+C**.
+Alternatively, run `.\run.ps1`; it selects this project's interpreter and refuses to start
+when port 8502 is occupied. If PowerShell blocks scripts, use the explicit Python command
+above. Stop an existing instance before restarting after source changes.
+
+## Try the fictional demo
+
+1. In **Analyze**, expand **Try fictional sample documents** and select **Run fictional demo**. This uses the real parser and matcher without saving history.
+2. Inspect the score breakdown, matched/not-detected skills, document statistics, and extracted text.
+3. Enable **Show skill improvement advice** to reveal the roadmap and bullet-editing prompts. It defaults off and retains its preference across navigation in the same session; toggling it does not change scores or clear results.
+4. In **Compare jobs**, select **Run three-job fictional demo** to compare reporting, business intelligence, and machine learning opportunities.
+5. Select **Generate local reports** to enable PDF and HTML downloads. Reports include recommendations independently of the on-screen advice toggle; resume quotations require a separate opt-in.
+
+For your own input, upload a PDF/DOCX and enter a title or description, or select a role.
+Use **Preview role skills** to review the profile, then submit the analysis. In comparison mode,
+a supported title or explicit role selection can supply a profile when the description is empty.
+Submit again after editing inputs to replace the previous result snapshot.
+
+All sample identities and experience are fictional. The TXT resume is a fixture source, not a
+supported upload format. Rebuild the sample documents only when needed:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\generate_samples.py
+```
+
+## Scoring methodology
+
+```text
+skill coverage = unique matched skills / unique recognized job skills
+match score    = 100 × (0.70 × skill coverage + 0.30 × TF-IDF cosine similarity)
+```
+
+Aliases and repeated mentions count once toward coverage. Related skills earn no exact-match
+credit. Essential/preferred labels guide learning priorities; every recognized job skill has
+equal weight in coverage. The 70/30 weights are design choices, not learned hiring weights.
+
+TF-IDF uses the two input texts, normalized word tokens, an explicit English stopword list,
+sublinear term frequency `1 + ln(count)`, smoothed IDF `1 + ln(3 / (1 + document frequency))`,
+and L2 cosine normalization. For title-only analysis, it compares the resume against generated
+profile text, which is visible in the analysis. It is lexical similarity, not skill coverage.
+
+Without a recognized role profile, a description needs at least 20 word tokens, 10 distinct
+tokens, task/requirement context, and a recognized taxonomy skill. Insufficient evidence or no
+recognized resume skills yields **N/A** coverage and match score, with similarity shown separately.
+Valid but disjoint skill sets can have zero coverage. Ranking uses unrounded scores; ties retain
+input order and unavailable scores appear last.
+
+## Tests
+
+From the project root, use the existing virtual environment and Windows temporary-directory
+workaround:
+
+```powershell
+New-Item -ItemType Directory -Force -Path "C:\pytest-temp" | Out-Null
 $env:TEMP = "C:\pytest-temp"
 $env:TMP = "C:\pytest-temp"
 .\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider --basetemp="C:\pytest-temp\resume-v2"
-.\.venv\Scripts\python.exe -m streamlit run app.py --server.port 8502
 ```
 
-Open http://127.0.0.1:8502 in your browser. Stop with Ctrl+C. For an existing setup,
-reuse the virtual environment and run the dependency install command before starting V3.
-The test command requires write access to `C:\pytest-temp`; pytest owns and clears
-the `resume-v2` temporary subfolder, so do not store personal files there.
-If using Python 3.11, replace `py -3.12` with `py -3.11`. If only `python` is on
-PATH, use `python -m venv .venv`. If neither exists, install Python and reopen the
-terminal. Select `.venv\Scripts\python.exe` as VS Code's Python interpreter.
-These commands do not require activation or PowerShell execution-policy changes.
-Always run from the project root so Streamlit loads its local configuration.
+The directory must be writable. Pytest manages and clears the `resume-v2` subfolder; never store
+personal files there. If `C:\pytest-temp` is not writable, choose a user-writable directory and
+update all three paths consistently. Disabling the cache provider avoids the known cache
+permission issue on Windows.
 
-For a directory-safe launch, run `& "<project-folder>\run.ps1"` from PowerShell.
-The launcher uses its own folder, the existing `.venv`, an absolute `app.py` path,
-and port 8502. It refuses to start if that port is occupied. If PowerShell blocks
-scripts, use the explicit `cd` and Python command above; no policy change is needed.
-After upgrading source modules, stop the old Streamlit process with Ctrl+C and
-restart from this directory. A healthy HTTP endpoint only proves the server is
-alive, not that its loaded Python modules are current. Verify the sidebar says
-**VERSION 3**, then run the fictional demo and confirm the Job match tab contains
-scores, skills and charts. Reload the browser after restarting. Unsaved session
-inputs must be entered again after a server restart; SQLite history is preserved.
+The suite covers document formats and invalid inputs, alias boundaries, scoring calculations,
+role resolution and refinement, custom-profile persistence, roadmap ordering, advice visibility,
+multi-job consistency, reports, history privacy, and Streamlit interactions. It uses fictional
+fixtures and temporary test databases. The current suite contains **138 tests**; run it locally
+to verify your environment. Test counts are not performance or hiring-effectiveness metrics.
 
-Dependencies: Streamlit (UI), pypdf (PDF extraction), python-docx (Word extraction),
-Plotly (local charts), ReportLab (local PDF reports), pytest (tests). SQLite and the lightweight TF-IDF implementation
-use Python's standard library; scikit-learn is not required. Internet is needed for initial dependency
-installation; normal analysis works offline. No OCR, model downloads or paid APIs.
+## Screenshots
 
-## Try it
+These existing screenshots show the fictional V3 comparison demo and report controls. They
+predate the latest role-management and optional-advice controls and are not a complete view of
+the current interface. No screenshots were fabricated or generated for this documentation.
 
-1. Upload `samples/fictional_resume.pdf` or `samples/fictional_resume.docx`.
-2. Paste `samples/fictional_job_description.txt`, or click **Use fictional job description**.
-3. Optionally enable saving numeric statistics; click **Extract & inspect**.
-4. Inspect **Job match**, **Document statistics** and **Extracted text** tabs.
-5. Expand the score calculation for all skill mentions and limitations. Review suggestions
-   against their original résumé lines. Use **Local history** for saved document summaries.
+### Ranked comparison and chart
 
-For a one-click end-to-end check, expand **Try fictional sample documents** and click
-**Run fictional demo**. It parses the sample PDF through the actual extractor and
-matches it against the full sample job description without saving history. The
-description includes SQL, Python, Excel, Power BI, statistics, data cleaning and
-visualization. Upload and submit your own résumé to replace the demo results.
+![Fictional V3 job comparison with ranked scores and Plotly chart](docs/screenshots/v3-comparison.png)
 
-All sample identities, organizations, experience and job details are fictional.
-The TXT résumé is an editable sample source, not a supported upload format.
-To rebuild sample documents: `.\.venv\Scripts\python.exe scripts\generate_samples.py`.
+### Report download controls
 
-## Architecture
+![Fictional V3 report controls and selected-job score breakdown](docs/screenshots/v3-reports.png)
 
-```text
-app.py                         Entry point
-resume_analyzer/
-  ui.py                        Homepage, analysis display and history UI
-  parsing.py                   In-memory PDF/DOCX extraction and file validation
-  analysis.py                  Pure text validation and descriptive statistics
-  taxonomy.py                  Canonical skills, aliases and explicit related pairs
-  matching.py                  Skill coverage and two-document TF-IDF engine
-  suggestions.py               Evidence-linked bullet editing prompts
-  match_ui.py                  Match breakdown, Plotly charts and suggestions
-  persistence.py               SQLite repository; parameterized values
-  comparison.py                Batch validation/ranking; calls existing matching.py
-  comparison_ui.py             Multi-job inputs, charts, drill-down and downloads
-  reports.py                   Escaped standalone HTML and paginated in-memory PDF
-samples/                       Clearly labeled fictional PDF, DOCX and TXT fixtures
-scripts/generate_samples.py    Reproducible fixtures, no additional dependencies
-tests/test_core.py             Parsing, validation, statistics and persistence tests
-tests/test_ui.py               Streamlit rendering and form validation tests
-tests/test_matching.py         Taxonomy, scoring, edge cases and evidence tests
-tests/test_comparison.py       Batch, report, privacy and comparison UI regressions
-samples/fictional_jobs.json    Three realistic fictional job descriptions
-docs/screenshots/             Verified V3 interface screenshots
-.streamlit/config.toml         Navy/teal theme, loopback binding, telemetry disabled
-data/history.sqlite3           Created lazily; excluded from version control
-```
+## Privacy and local storage
 
-Flow: UI → input validation → in-memory extraction → statistics → optional SQLite
-summary. The parser and analysis functions have no Streamlit dependency. The
-history repository opens/closes connections per operation and binds all SQL values
-with placeholders. Schema V1 stores timestamp, format, bytes, PDF pages and word/
-character counts. V2 preserves that schema and existing records; match results and
-suggestions stay in session memory and are not added to history. No database migration
-or data deletion is performed. Future schema changes should introduce explicit migrations.
+- The app binds to `127.0.0.1`; document extraction and matching run locally. Streamlit usage telemetry is disabled. The application does not send resume content to external services.
+- Uploaded documents and extracted text are processed in memory, not automatically saved as source files. Clear session inputs/results or stop the app when finished.
+- Optional history in `data/history.sqlite3` stores timestamps, format, size, page count, and word/character counts, not filenames or source text. Comparison does not write history rows.
+- Explicitly saved custom profiles in `data/custom_roles.sqlite3` contain a custom title and canonical skill metadata. Avoid personal information in titles. Built-in roles are not overwritten.
+- SQLite data is local and unencrypted. Both stores use parameterized SQL values and are excluded from Git. History deletion and custom-role deletion are separate controls.
+- Exported reports can contain job titles and skill summaries; quotations may contain personal information when enabled. Review reports before sharing. Downloaded files remain until you delete them.
+- `.gitignore` excludes virtual environments, caches, local databases, secrets, environment files, private uploads, and generated report directories. PDF/DOCX files are ignored except the named fictional fixtures. `.env.example` is permitted only for non-secret placeholders. Ignore rules do not sanitize files; review every staged upload.
 
-## Matching specification (V2)
+## Limitations
 
-### Input sufficiency validation (V3 fix)
+- Skill mentions do not prove proficiency. Missing means **not detected**, not that the person lacks a skill. Negation, experience duration, and nuanced requirements are not reliably interpreted.
+- The English-oriented taxonomy and illustrative role profiles are incomplete. Aliases can be ambiguous; description extraction cannot infer skills outside the taxonomy.
+- TF-IDF measures wording rather than meaning. Repetition, document length, and extraction errors can affect scores. Pair-specific scores are exploratory and not standardized applicant rankings.
+- PDF/DOCX uploads are limited to 5 MiB; PDFs to 50 pages; declared expanded DOCX content to 25 MiB. Scanned PDFs need external OCR. Encrypted PDFs are unsupported.
+- Complex PDF layouts can alter reading order. DOCX extraction includes body paragraphs and tables, not headers, footers, or text boxes; it does not calculate page counts.
+- PDF reports use Western fonts and may replace unsupported characters. HTML preserves Unicode. Reports contain text summaries, not interactive charts or the four-week roadmap.
+- Learning times and the four-week plan are suggestions for introductory practice, not guarantees of mastery or job readiness. The plan focuses on the first one or two priorities.
+- This is a local portfolio application for trusted documents, not a hardened public upload service or hiring decision system.
 
-The shared `analyze_job_match` entry point validates user-facing single-job and
-comparison requests, then delegates to the existing `analyze_match` calculation.
-The latter remains a low-level mention/formula function for small mathematical
-fixtures; it is not a job-description completeness check. There is only one
-scoring formula, with the original **70% coverage / 30% TF-IDF** weights.
+## Portfolio summary
 
-Descriptions need at least 20 word tokens, 10 distinct tokens, and an explicit
-task/requirement cue (such as responsibilities, experience, build, maintain or
-skills). This conservative English heuristic is not a semantic classifier and
-can reject unusually concise descriptions. A list such as “Data Analyst,
-Business Analyst, and Junior Data Scientist” supplies titles, not skills.
-Titles are never expanded into assumed qualifications. Resume length does not
-make a short job input adequate; there is no resume-to-job length ratio rule.
+**Project summary:** A Python and Streamlit application that turns PDF/DOCX resumes and job
+requirements into explainable skill-alignment dashboards. It combines local text processing,
+role-profile management, optional learning guidance, multi-job comparison, report generation,
+and SQLite persistence in a tested modular codebase.
 
-Insufficient descriptions, no recognized job skills, or no recognized resume
-skills produce **N/A** coverage and match score. Skill gaps and suggestions are
-withheld in the UI, ranked comparison and both reports. TF-IDF remains visible
-as shared wording only, not skill coverage or suitability. Recognized but
-disjoint skill sets can still legitimately have zero coverage. Empty inputs
-continue to raise helpful validation errors.
+**Resume-ready description:** Built a local resume and job-match analyzer using Python,
+Streamlit, Plotly, and SQLite; implemented document extraction, taxonomy-based skill matching,
+transparent TF-IDF scoring, custom role profiles, comparison reports, and automated regression tests.
 
-The taxonomy additionally recognizes data analysis/analytics, dashboards,
-business intelligence, communication and problem-solving, with explicit aliases,
-case-insensitive whole-token boundaries and normalized Unicode hyphens. Alias
-coverage may change which skills are counted; it does not change score weights.
+## Future improvements
 
-Use **Load Data Analyst example** inside either input form to load the existing
-realistic fictional Data Analyst description without replacing the uploaded
-resume. In comparison mode choose the target job first. The form callback updates
-only that description and preserves the other submitted inputs. Submit analysis
-again to replace the previous result snapshot. Editing suggestions remain prompts
-grounded in quoted source lines, never verified achievements or invented rewrites.
+Potential next steps, **not currently implemented**:
 
-`taxonomy.py` is the single source of truth for canonical names, aliases and related
-pairs. It includes Python, SQL, Excel, Power BI, Tableau, statistics, data visualization,
-machine learning, libraries, databases, data preparation and reporting skills.
-To extend it, add a canonical key with explicit aliases in `SKILLS`, optionally add
-pairs in `RELATED_PAIRS`, and add extraction/scoring tests. Do not treat related
-tools as aliases: pandas is related to Python but does not prove a Python mention.
-
-Extraction normalizes Unicode (NFKC), letter case, whitespace and hyphen variants,
-and uses whole-token boundaries. Aliases collapse to one canonical skill per document.
-Matched = résumé ∩ job skills; missing = job skills not mentioned in the résumé.
-Related entries connect a missing job skill to a detected résumé skill through an
-explicit, symmetric taxonomy pair. They remain missing and earn no coverage credit.
-All detected skills are shown, including résumé-only skills.
-
-### Score and charts
-
-For nonempty validated inputs with at least one recognized job skill:
-
-```text
-coverage = unique matched skills / unique job skills
-score = 100 × (0.70 × coverage + 0.30 × TF-IDF cosine similarity)
-```
-
-The 70/30 weights are transparent design choices, not learned or calibrated hiring
-weights. Every unique job skill has equal weight; required and preferred skills are
-not distinguished. Duplicates and aliases cannot increase skill coverage.
-
-TF-IDF is fitted to just the résumé and job description (N=2). Tokens are normalized
-Unicode word tokens of at least two characters; punctuation splits tokens. A small
-explicit English stopword set is in `matching.py`. There is no stemming or alias
-canonicalization in the TF-IDF component. For each term:
-
-```text
-TF = 1 + ln(term count) when present, else 0
-IDF = 1 + ln((1 + N) / (1 + document frequency))
-vector weight = TF × IDF
-cosine = dot product / (L2 norm of résumé × L2 norm of job)
-```
-
-This uses the documented smoothed IDF and sublinear TF conventions described in
-[scikit-learn's TF-IDF reference](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html),
-implemented locally with standard-library counters and math. Empty vectors return
-zero similarity. Empty/whitespace/punctuation-only match inputs are rejected.
-When no job skills are recognized, coverage and total score are **N/A**, not zero;
-text similarity is still displayed independently. The skill chart counts matched
-and missing skills; the contribution chart shows up to 70 coverage points and 30
-similarity points. Display rounding does not affect calculations.
-
-### Suggestions and limitations
-
-Suggestions quote up to five existing bullet-like or action-led lines and ask for
-clearer contribution, verified scope/outcomes, or explanation of already-mentioned
-job skills. They do not write fabricated achievements, numbers or qualifications.
-No suitable lines means no personalized suggestions. A number alone is not proof
-of impact; users are asked to verify its meaning. Missing skills should only be
-added if actually possessed and supported by evidence.
-
-- Skills are **mentions**, not verified abilities. Negation is not understood:
-  “no Python experience” still mentions Python. Inspect the extracted text.
-- Ambiguous aliases such as Excel or ML can create false positives. The curated
-  English-oriented taxonomy is incomplete; absence is not proof of a skill gap.
-- TF-IDF is lexical, not semantic. Equivalent wording can differ, and repeated
-  keywords can influence similarity despite sublinear TF. Repetition does not
-  improve skill coverage. Pair-specific IDF means scores are not standardized
-  across different jobs and should not be used to rank applicants.
-  V3 ranks opportunities for one resume as an exploratory aid only; this is not
-  a calibrated comparison of job suitability or a candidate selection system.
-- Extraction order/errors, document length, optional skills and unrelated mentions
-  can change results. Neither years of experience nor expertise is assessed.
-- This is a résumé editing aid. **It does not predict hiring success or ATS outcomes.**
-
-## Privacy and boundaries
-
-- App binds to `127.0.0.1`. Uploaded bytes and source text stay in local process/
-  browser session memory; the application does not transmit them to external services.
-- History is opt-in and stores numeric summaries only, never filenames, names,
-  résumé text or job-description text. SQLite is local and unencrypted.
-- No user document caching, raw-content logging or automatic source-file writes.
-  Clear session inputs/results after use; close the browser and stop the server
-  to release process memory. This is not a guarantee of forensic memory erasure.
-- Uploaded content is rendered as plain text, never interpolated into HTML.
-- Delete history in the UI, or stop the app and delete `data/history.sqlite3`.
-- Streamlit usage telemetry is disabled. Configuration reference:
-  https://docs.streamlit.io/develop/api-reference/configuration/config.toml
-
-## Validation and limitations
-
-Accepts PDF/DOCX up to 5 MiB; PDF up to 50 pages. DOCX declared uncompressed
-content is capped at 25 MiB. Job and extracted résumé text have a 100,000-character
-limit and must contain letters or numbers. Empty, damaged, wrong-format and
-encrypted files receive actionable messages. Scans require OCR outside this app.
-Complex PDFs may have imperfect reading order; DOCX includes body paragraphs and
-tables but not headers, footers or text boxes. DOCX page counts are unavailable.
-The size limits reduce resource use; parsing is not isolated in a sandbox and
-the app is intended for trusted local documents, not a public upload service.
-
-Word counts use Unicode word tokens and preserve internal hyphens/apostrophes;
-unique words ignore case. Character counts include whitespace after trimming the
-outer whitespace; line counts include only nonempty lines. These metrics do not
-measure job suitability. Displayed results belong to the last successful submission.
-
-Tests cover both formats, corrupted and empty files, unsupported types, limits,
-password PDFs, blank documents, Unicode statistics, table text, history privacy,
-and basic UI behavior. No résumé is uploaded during automated tests.
-
-V2 tests additionally cover taxonomy aliases, duplicates, boundaries, missing and
-related skills, hand-calculated TF-IDF values, weighted scores, no-skill and empty
-inputs, score bounds, evidence provenance, charts and unchanged history behavior.
-Semantic models and generated rewrites remain outside this version's scope.
-
-## Verified initial V3 checks (before validation/taxonomy update)
-
-The full suite passed **80 tests in 5.31 seconds** on Python 3.12 using the
-TEMP/TMP command above. All 57 pre-existing collected test IDs remain present;
-23 cases were added. The existing branding assertion was updated from V2 to V3,
-with all scoring, extraction and privacy assertions retained. Dependency checks
-passed. Browser verification on port 8502 exercised the three-job demo, ranked
-results, charts and generation of both report downloads. All four pages of the
-fictional PDF were rendered and visually inspected.
-
-The initial fictional demo scored 79.51, 19.99 and 9.86 for reporting, business
-intelligence and machine learning respectively. These are reproducibility examples,
-not recommendations about real jobs or predictions of hiring success.
-
-## Validation/taxonomy fix verification
-
-The updated suite passed **107 tests in 6.00 seconds** with the existing virtual
-environment and Windows TEMP/TMP workaround. All 80 pre-fix test IDs remain; 27
-cases were added. Existing UI/report fixtures now use full descriptions where
-they test a calculated score; low-level formula tests retain their original
-keyword inputs and assertions. No tests were removed. The SQLite file hash was
-unchanged. Live browser verification confirmed that the reported eight-word
-title list produces N/A score/coverage, separate lexical similarity, an explicit
-warning and no inferred skill gaps or recommendations. Loading the Data Analyst
-example retained the uploaded fictional PDF. Taxonomy expansion can change demo
-scores by recognizing more explicit mentions; the 70/30 formula is unchanged.
-
-## Job Title Intelligence
-
-Choose **Auto-detect from title** or override **Job role** in either analysis form.
-Enter a whole title such as `Data Analyst job` or `Software Engineer`; comparisons
-also accept a supported title with an empty description. An explicit role selection
-can be used without a description. Ambiguous lists and unknown titles still require
-a complete description or a supported selection. Auto-detection uses the first line,
-with optional `Job title:` and junior/senior prefixes, and case-insensitive aliases.
-
-Supported roles: Data Analyst, Business Analyst, Data Scientist, Software Engineer,
-Python Developer, Java Developer, Web Developer, Frontend Developer, Backend Developer,
-Full Stack Developer, Machine Learning Engineer, Database Administrator.
-
-`resume_analyzer/role_skills.py` holds editable profiles, aliases, categories and
-importance weights (essential 2, preferred 1). These weights order roadmap guidance;
-they do not change the existing unique-skill coverage or 70% coverage / 30% TF-IDF
-formula. Title-only similarity compares the resume with generated catalog text,
-shown in the analysis, rather than the few title words. Profiles are illustrative,
-not verified employer requirements. A meaningful full description takes precedence:
-its recognized skills replace generic requirements, with explicit essential/preferred
-labels retained and other mentions marked unspecified. Put the title on its own first
-line or select a role when providing a full description.
-
-The matcher and roadmap retain strict description validation when called without the
-optional `role` argument; the UI enables catalog resolution explicitly. Existing
-comparison/report/history behavior is retained. Guidance does not verify proficiency,
-and scores do not predict hiring success. Generic profiles may omit relevant skills.
-
-### Temporary and saved custom profiles
-
-Unknown titles with a complete description now get a temporary, locally extracted
-profile. Use **Preview role skills** before submitting to review essential,
-preferred and unspecified mentions. Provide an optional title in Analyze; the
-comparison form already has title fields. The existing description quality gate
-requires at least 20 words, 10 distinct words, task/requirement context and at least
-one taxonomy skill. A profile is a deterministic summary, not machine learning:
-unlisted skills, negation, ambiguous terms and complex requirement wording may be
-missed. Full descriptions replace generic built-in or saved skill requirements.
-
-**Save this role locally** is explicit opt-in. Only the reviewed custom title and
-canonical skills/importance are stored in `data/custom_roles.sqlite3`; neither
-resume text nor job-description bodies are saved. Avoid personal information in
-role titles. The built-in catalog and numeric history database are separate.
-Case-insensitive duplicate titles are rejected; use **Edit saved roles** to update
-skill selections/importance or explicitly confirm deletion. Saved roles become
-available in both selectors and in future sessions. Existing analysis snapshots
-remain unchanged when a saved profile is edited or removed.
-
-**Show skill improvement advice** defaults to unchecked. It controls roadmap and
-bullet advice in both analysis views, without changing scores or clearing results.
-The preference survives navigation within the session. Enable it to see practice
-tasks, approximate learning times and the suggested four-week plan. Existing report
-exports remain independently generated summaries, including their recommendations.
+- Expand taxonomy coverage with curated examples and regression tests for ambiguous wording.
+- Improve requirement classification and negation handling while keeping decisions explainable.
+- Evaluate extraction and matching quality against a labeled, consented or synthetic dataset.
+- Improve Unicode PDF rendering and accessibility of dashboard controls.
+- Explore local OCR with explicit user control and documented resource costs.
